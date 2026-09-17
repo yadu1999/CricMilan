@@ -164,6 +164,6 @@ export const INITIAL_ADMINS: Admin[] = [
     id: 1,
     username: "admin",
     // bcrypt hash of "cricmilanadmin"
-    password_hash: "$2a$10$I3BqEtkeJgdBhU5ArU.VOO6kfjWn4gw1nARITDi5z8cmVxVcKGDue"
+    password_hash: "$2a$10$hE.17pSyHIj/RI7KAwhzTuEC9t29eEDM/Uou9t.kn7.Bla40d0Vci"
   }
 ];
