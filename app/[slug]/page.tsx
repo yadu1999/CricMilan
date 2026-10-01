@@ -217,31 +217,6 @@ export default async function ArticlePage({ params }: PageProps) {
               </div>
 
               <h1 className="article-main-title">{article.title}</h1>
-
-              <div className="article-author-bar">
-                <div className="article-author-info">
-                  <div className="author-large-avatar">
-                    {article.author ? article.author.charAt(0).toUpperCase() : 'C'}
-                  </div>
-                  <div className="author-meta-lines">
-                    <span className="author-name">By {article.author}</span>
-                    <span className="published-date-line">
-                      Published{' '}
-                      {new Date(article.published_at).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}{' '}
-                      &bull; {readTime} min read
-                    </span>
-                  </div>
-                </div>
-
-                <ShareButtons title={article.title} url={fullUrl} />
-              </div>
             </header>
 
             {article.featured_image && (
@@ -263,6 +238,32 @@ export default async function ArticlePage({ params }: PageProps) {
               className="article-body"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
+
+            {/* Author Credits & Social Sharing (Moved to bottom of article) */}
+            <div className="article-author-bar article-author-bar-bottom">
+              <div className="article-author-info">
+                <div className="author-large-avatar">
+                  {article.author ? article.author.charAt(0).toUpperCase() : 'C'}
+                </div>
+                <div className="author-meta-lines">
+                  <span className="author-name">By {article.author}</span>
+                  <span className="published-date-line">
+                    Published{' '}
+                    {new Date(article.published_at).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}{' '}
+                    &bull; {readTime} min read
+                  </span>
+                </div>
+              </div>
+
+              <ShareButtons title={article.title} url={fullUrl} />
+            </div>
 
             {/* Interactive Article Reactions Bar */}
             <Reactions articleId={article.id} initialReactions={reactions} />

@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import LivePulseBar from '@/components/LivePulseBar';
 import Navbar from '@/components/Navbar';
-import BreakingTicker from '@/components/BreakingTicker';
 import Footer from '@/components/Footer';
 import AdBanner from '@/components/AdBanner';
-import { getBreakingArticles } from '@/lib/db';
 
 export const metadata: Metadata = {
   title: {
@@ -38,18 +35,11 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let breakingArticles: { title: string; slug: string }[] = [];
-  try {
-    breakingArticles = await getBreakingArticles(5);
-  } catch (e) {
-    breakingArticles = [];
-  }
-
   return (
     <html lang="en">
       <head>
@@ -62,9 +52,7 @@ export default async function RootLayout({
       </head>
       <body>
         <div id="readingProgressBar"></div>
-        <LivePulseBar />
         <Navbar />
-        <BreakingTicker articles={breakingArticles} />
         <main className="container">
           <AdBanner type="header" />
           {children}
@@ -74,3 +62,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

@@ -19,17 +19,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Trending Topics Strip */}
-      <div className="trending-strip">
-        <span className="trending-label"><span className="flame-icon">&#128293;</span> Hot:</span>
-        <Link href="/search?q=Kohli" className="trend-pill">#ViratKohli51st</Link>
-        <Link href="/search?q=Asia+Cup" className="trend-pill">#AsiaCupThriller</Link>
-        <Link href="/search?q=IPL" className="trend-pill">#IPL2026Auction</Link>
-        <Link href="/search?q=USA" className="trend-pill">#ICCWorldUSA</Link>
-        <Link href="/search?q=India" className="trend-pill">#TeamIndiaRank1</Link>
-        <Link href="/category/stories" className="trend-pill">#GrassrootsCricket</Link>
-      </div>
-
       {/* Hero Section (Bento Magazine Layout) */}
       <section className="hero-bento-grid">
         {primary ? (
@@ -114,49 +103,6 @@ export default async function HomePage() {
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>No articles published yet. Please login to the admin panel to add stories.</p>
           </div>
         )}
-      </section>
-
-      {/* Live Match Center Broadcast Card */}
-      <section className="live-match-center-card">
-        <div className="center-card-header">
-          <div className="center-title-group">
-            <span className="live-dot"></span>
-            <span className="match-status-badge status-live">MATCH CENTER LIVE</span>
-            <span className="tournament-name">Border-Gavaskar Trophy &bull; 3rd ODI</span>
-          </div>
-          <div className="match-venue">M. Chinnaswamy Stadium, Bengaluru</div>
-        </div>
-
-        <div className="match-scores-grid">
-          {/* Team 1 */}
-          <div className="team-score-block">
-            <div className="team-badge-circle team-badge-ind">IND</div>
-            <div>
-              <div className="team-name">India</div>
-              <div className="score-text">348/5 <span className="overs-text">(48.2 Ov)</span></div>
-            </div>
-          </div>
-
-          {/* VS Separator */}
-          <div className="vs-separator-pill">
-            <div>CRR: 7.20</div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--gold-star)' }}>TOSS: IND (BAT)</div>
-          </div>
-
-          {/* Team 2 */}
-          <div className="team-score-block" style={{ justifyContent: 'flex-end', textAlign: 'right' }}>
-            <div>
-              <div className="team-name">Australia</div>
-              <div className="score-text" style={{ color: 'var(--text-secondary)' }}>Yet to Bat</div>
-            </div>
-            <div className="team-badge-circle team-badge-aus">AUS</div>
-          </div>
-        </div>
-
-        <div className="match-summary-situation">
-          <span>&#127951; <strong>Live Commentary:</strong> Kohli 112* (94) &bull; Rahul 64 (52) | Starc 2/62 (9.2)</span>
-          <span style={{ color: 'var(--emerald-live)' }}>&#9889; India Projected Total: 365+</span>
-        </div>
       </section>
 
       {/* Homepage Main Grid Layout */}
