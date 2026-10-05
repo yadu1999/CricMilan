@@ -3,7 +3,7 @@ import { getPublishedArticles } from '@/lib/db';
 import { STATIC_PAGES } from '@/lib/staticPages';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.in';
 
   const articles = await getPublishedArticles(100);
 

@@ -58,7 +58,7 @@ export default function Footer() {
 
         <div className="footer-bottom">
           <div>
-            &copy; {year} <strong>CricMilan.com</strong>. All Rights Reserved. Cricket &amp; News Always On.
+            &copy; {year} <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}><strong>cricmilan.in</strong></Link>. All Rights Reserved. Cricket &amp; News Always On.
           </div>
           <div className="footer-bottom-links">
             <Link href="/admin/login" className="footer-admin-link">⚙ Admin Portal</Link>

@@ -1,8 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import AdBanner from '@/components/AdBanner';
-import PollWidget from '@/components/PollWidget';
-import NewsletterWidget from '@/components/NewsletterWidget';
 import { getPublishedArticles, getArticlesByCategory } from '@/lib/db';
 
 export const revalidate = 60; // ISR cache for 60 seconds
@@ -137,7 +135,7 @@ export default async function HomePage() {
                   <h3>
                     <Link href={`/${article.slug}`}>{article.title}</Link>
                   </h3>
-                  <p>{article.meta_description || 'Read the full story on CricMilan.com'}</p>
+                  <p>{article.meta_description || 'Read the full story on CricMilan.in'}</p>
                   <div className="card-meta">
                     <div className="author-pill">
                       <span className="author-avatar">{article.author ? article.author.charAt(0).toUpperCase() : 'C'}</span>
@@ -185,7 +183,7 @@ export default async function HomePage() {
                       <h3>
                         <Link href={`/${article.slug}`}>{article.title}</Link>
                       </h3>
-                      <p>{article.meta_description || 'Read the full story on CricMilan.com'}</p>
+                      <p>{article.meta_description || 'Read the full story on CricMilan.in'}</p>
                       <div className="card-meta">
                         <div className="author-pill">
                           <span className="author-avatar">{article.author ? article.author.charAt(0).toUpperCase() : 'C'}</span>
@@ -232,7 +230,7 @@ export default async function HomePage() {
                       <h3>
                         <Link href={`/${article.slug}`}>{article.title}</Link>
                       </h3>
-                      <p>{article.meta_description || 'Read the full story on CricMilan.com'}</p>
+                      <p>{article.meta_description || 'Read the full story on CricMilan.in'}</p>
                       <div className="card-meta">
                         <div className="author-pill">
                           <span className="author-avatar">{article.author ? article.author.charAt(0).toUpperCase() : 'C'}</span>
@@ -290,12 +288,6 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
-
-          {/* Fan Poll Widget */}
-          <PollWidget />
-
-          {/* VIP Club Newsletter Widget */}
-          <NewsletterWidget />
         </aside>
       </div>
     </>

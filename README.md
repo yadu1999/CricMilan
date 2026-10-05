@@ -1,6 +1,6 @@
-# CricMilan.com - Cricket & News Portal (Next.js Edition)
+# CricMilan.in - Cricket & News Portal (Next.js Edition)
 
-Welcome to the official repository of **CricMilan.com**! 
+Welcome to the official repository of **CricMilan.in**! 
 This is a high-speed, lightweight, and professional sports news web application built natively with **Next.js (App Router), React, TypeScript**, and a resilient **SQLite / LibSQL database layer**.
 
 ## 🚀 Tagline
@@ -23,7 +23,7 @@ This is a high-speed, lightweight, and professional sports news web application 
 ## 🌟 Core Features
 
 - **Next.js App Router Native:** Ultra-fast Server-Side Rendering (SSR), Incremental Static Regeneration (ISR), and React Server Components (RSC).
-- **Dynamic Clean URLs:** Generates SEO-friendly URLs directly under the domain root (e.g., `cricmilan.com/virat-kohli-historic-51st-odi-century-bengaluru`).
+- **Dynamic Clean URLs:** Generates SEO-friendly URLs directly under the domain root (e.g., `cricmilan.in/virat-kohli-historic-51st-odi-century-bengaluru`).
 - **Full Admin CRUD Dashboard:** Add, Edit, Delete, Publish/Draft, and toggle Breaking News with instant feedback.
 - **Canvas-based Client Compression:** Automatically compresses and resizes images in the browser before upload, protecting storage and bandwidth.
 - **Interactive Article Reactions:** Live feedback counters (🔥 Thrilling, 🏏 Masterclass, 👏 Historic, ❤️ Loved It) stored in database.
@@ -61,7 +61,7 @@ Ensure you have **Node.js** (v18 or higher) installed, then:
 
 ## 💵 Google AdSense Integration Guide
 
-We have optimized the layout of CricMilan.com to be completely **AdSense-friendly**. To start displaying real advertisements:
+We have optimized the layout of CricMilan.in to be completely **AdSense-friendly**. To start displaying real advertisements:
 
 ### Step 1: Add the Google AdSense Script
 1. Open the header layout file: `views/partials/header.ejs`.

@@ -51,7 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const shareButtons = document.querySelectorAll('.share-btn');
   shareButtons.forEach(button => {
     button.addEventListener('click', () => {
-      const url = encodeURIComponent(window.location.href);
+      const rawUrl = window.location.href.replace(/cricmilan\.com/gi, 'cricmilan.in');
+      const url = encodeURIComponent(rawUrl);
       const title = encodeURIComponent(document.title);
       let shareUrl = '';
 
@@ -62,14 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (button.classList.contains('wa')) {
         shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`;
       } else if (button.id === 'copyLinkBtn') {
-        navigator.clipboard.writeText(window.location.href).then(() => {
+        navigator.clipboard.writeText(rawUrl).then(() => {
           const toast = document.getElementById('copyToast');
           if (toast) {
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 3000);
           }
         }).catch(() => {
-          prompt('Copy article link:', window.location.href);
+          prompt('Copy article link:', rawUrl);
         });
         return;
       }

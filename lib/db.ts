@@ -71,12 +71,20 @@ export async function initDatabase() {
         status TEXT DEFAULT 'draft',
         is_breaking INTEGER DEFAULT 0,
         featured_image TEXT,
+        additional_images TEXT DEFAULT '[]',
         seo_title TEXT,
         meta_description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Ensure additional_images column exists if table was already created
+    try {
+      await db.execute("ALTER TABLE articles ADD COLUMN additional_images TEXT DEFAULT '[]'");
+    } catch (e) {
+      // Column already exists or table freshly created
+    }
 
     await db.execute(`
       CREATE TABLE IF NOT EXISTS article_reactions (
@@ -244,6 +252,7 @@ export async function createArticle(data: {
   status: string;
   is_breaking: number;
   featured_image?: string;
+  additional_images?: string;
   seo_title?: string;
   meta_description?: string;
   published_at?: string;
@@ -253,8 +262,8 @@ export async function createArticle(data: {
   const pubDate = data.published_at || new Date().toISOString();
   const res = await db.execute({
     sql: `INSERT INTO articles (
-      title, slug, content, category, author, status, is_breaking, featured_image, seo_title, meta_description, published_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      title, slug, content, category, author, status, is_breaking, featured_image, additional_images, seo_title, meta_description, published_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       data.title,
       data.slug,
@@ -264,6 +273,7 @@ export async function createArticle(data: {
       data.status || 'draft',
       data.is_breaking || 0,
       data.featured_image || '',
+      data.additional_images || '[]',
       data.seo_title || data.title,
       data.meta_description || '',
       pubDate
@@ -281,6 +291,7 @@ export async function updateArticle(id: number, data: {
   status: string;
   is_breaking: number;
   featured_image?: string;
+  additional_images?: string;
   seo_title?: string;
   meta_description?: string;
   published_at?: string;
@@ -290,7 +301,7 @@ export async function updateArticle(id: number, data: {
   const pubDate = data.published_at || new Date().toISOString();
   await db.execute({
     sql: `UPDATE articles SET
-      title = ?, slug = ?, content = ?, category = ?, author = ?, status = ?, is_breaking = ?, featured_image = ?, seo_title = ?, meta_description = ?, published_at = ?, updated_at = CURRENT_TIMESTAMP
+      title = ?, slug = ?, content = ?, category = ?, author = ?, status = ?, is_breaking = ?, featured_image = ?, additional_images = ?, seo_title = ?, meta_description = ?, published_at = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
     args: [
       data.title,
@@ -301,6 +312,7 @@ export async function updateArticle(id: number, data: {
       data.status,
       data.is_breaking,
       data.featured_image || '',
+      data.additional_images || '[]',
       data.seo_title || data.title,
       data.meta_description || '',
       pubDate,
@@ -388,4 +400,18 @@ export async function getSystemStats() {
     draft: Number(row.draft || 0),
     breaking: Number(row.breaking || 0)
   };
+}
+
+export async function getAllCategories(): Promise<string[]> {
+  try {
+    await initDatabase();
+    const db = getDbClient();
+    const res = await db.execute("SELECT DISTINCT category FROM articles WHERE category IS NOT NULL AND TRIM(category) != '' ORDER BY category ASC");
+    const cats = res.rows.map(r => String(r.category).trim()).filter(Boolean);
+    const defaultCats = ['Cricket', 'Breaking News', 'Stories', 'India', 'World', 'Trending'];
+    const set = new Set([...defaultCats, ...cats]);
+    return Array.from(set);
+  } catch (e) {
+    return ['Cricket', 'Breaking News', 'Stories', 'India', 'World', 'Trending'];
+  }
 }

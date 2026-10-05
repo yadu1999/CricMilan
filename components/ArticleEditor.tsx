@@ -27,14 +27,48 @@ export default function ArticleEditor({ initialArticle }: Props) {
       ? new Date(initialArticle.published_at).toISOString().slice(0, 16)
       : new Date().toISOString().slice(0, 16)
   );
+
+  // Dynamic Categories
+  const [categoriesList, setCategoriesList] = useState<string[]>([
+    'Cricket', 'Breaking News', 'Stories', 'India', 'World', 'Trending'
+  ]);
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  // Primary image
   const [imagePreview, setImagePreview] = useState(initialArticle?.featured_image || '/css/placeholder.jpg');
   const [compressedImage, setCompressedImage] = useState<string | null>(null);
   const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
+
+  // Additional images (Photo 2, Photo 3, etc.)
+  const parsedAdditional: string[] = (() => {
+    try {
+      if (initialArticle?.additional_images) {
+        const arr = JSON.parse(initialArticle.additional_images);
+        return Array.isArray(arr) ? arr : [];
+      }
+    } catch (e) {}
+    return [];
+  })();
+  const [additionalImages, setAdditionalImages] = useState<string[]>(parsedAdditional);
+  const [isProcessingAdditional, setIsProcessingAdditional] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const additionalFilesRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCategoriesList(prev => Array.from(new Set([...prev, ...data])));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const slugify = (text: string) => {
     return text
@@ -52,44 +86,84 @@ export default function ArticleEditor({ initialArticle }: Props) {
     }
   };
 
-  // HTML5 Canvas image compressor
-  const handleImageFile = (file: File) => {
-    if (!file || !file.type.startsWith('image/')) return;
-    const originalSizeKB = Math.round(file.size / 1024);
+  // Generic HTML5 Canvas image compressor
+  const compressFile = (file: File): Promise<{ dataUrl: string; originalKB: number; compressedKB: number }> => {
+    return new Promise((resolve) => {
+      if (!file || !file.type.startsWith('image/')) {
+        return resolve({ dataUrl: '', originalKB: 0, compressedKB: 0 });
+      }
+      const originalKB = Math.round(file.size / 1024);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxWidth = 1200;
+          let width = img.width;
+          let height = img.height;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxWidth = 1200;
-        let width = img.width;
-        let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
 
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve({ dataUrl: '', originalKB, compressedKB: originalKB });
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        const compressedSizeKB = Math.round((compressedDataUrl.length * 3) / 4 / 1024);
-
-        setImagePreview(compressedDataUrl);
-        setCompressedImage(compressedDataUrl);
-        setCompressionInfo(
-          `✓ Canvas Optimized: ${originalSizeKB} KB → ${compressedSizeKB} KB (Saved ${Math.max(0, originalSizeKB - compressedSizeKB)} KB)`
-        );
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          const compressedKB = Math.round((dataUrl.length * 3) / 4 / 1024);
+          resolve({ dataUrl, originalKB, compressedKB });
+        };
+        img.src = e.target?.result as string;
       };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Primary image handler
+  const handleImageFile = async (file: File) => {
+    const res = await compressFile(file);
+    if (res.dataUrl) {
+      setImagePreview(res.dataUrl);
+      setCompressedImage(res.dataUrl);
+      setCompressionInfo(
+        `✓ Main Canvas Optimized: ${res.originalKB} KB → ${res.compressedKB} KB`
+      );
+    }
+  };
+
+  // Additional images handler (multi-file support)
+  const handleAdditionalFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsProcessingAdditional(true);
+    const newItems: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const res = await compressFile(files[i]);
+      if (res.dataUrl) {
+        newItems.push(res.dataUrl);
+      }
+    }
+
+    setAdditionalImages(prev => [...prev, ...newItems]);
+    setIsProcessingAdditional(false);
+  };
+
+  const removeAdditionalImage = (index: number) => {
+    setAdditionalImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddNewCategory = () => {
+    const trimmed = newCategoryName.trim();
+    if (trimmed) {
+      setCategoriesList(prev => Array.from(new Set([...prev, trimmed])));
+      setCategory(trimmed);
+      setNewCategoryName('');
+      setShowNewCategoryInput(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,6 +181,7 @@ export default function ArticleEditor({ initialArticle }: Props) {
         status,
         is_breaking: isBreaking ? 1 : 0,
         featured_image: compressedImage || initialArticle?.featured_image || '',
+        additional_images: JSON.stringify(additionalImages),
         seo_title: seoTitle || title,
         meta_description: metaDesc,
         published_at: new Date(publishedAt).toISOString()
@@ -144,9 +219,9 @@ export default function ArticleEditor({ initialArticle }: Props) {
       <nav className="admin-navbar">
         <div className="container admin-nav-container">
           <div className="admin-brand">
-            Cric<span>Milan</span>{' '}
-            <span style={{ fontSize: '0.75rem', color: 'var(--cyan-pulse)', fontWeight: 700, marginLeft: '5px' }}>
-              STORY COMPOSER
+            <span style={{ fontSize: '1.4rem' }}>🏏</span>
+            <span style={{ fontWeight: 800, letterSpacing: '-0.5px' }}>
+              Cric<span style={{ color: 'var(--accent-red)' }}>Milan</span> CMS
             </span>
           </div>
           <ul className="admin-nav-links">
@@ -200,19 +275,19 @@ export default function ArticleEditor({ initialArticle }: Props) {
 
               <div className="form-group">
                 <label htmlFor="slug">
-                  SEO Clean URL Slug <span style={{ color: 'var(--accent-red)' }}>*</span>
+                  Clean URL Slug <span style={{ color: 'var(--accent-red)' }}>*</span>
                 </label>
                 <input
                   type="text"
                   id="slug"
                   className="form-control"
-                  placeholder="e.g. virat-kohli-historic-century"
+                  placeholder="virat-kohli-champions-trophy-record"
                   value={slug}
                   onChange={(e) => setSlug(slugify(e.target.value))}
                   required
                 />
                 <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'block', marginTop: '4px' }}>
-                  Permanent URL: cricmilan.com/
+                  Permanent URL: cricmilan.in/
                   <strong style={{ color: 'var(--cyan-pulse)' }}>{slug || 'your-slug'}</strong>
                 </small>
               </div>
@@ -237,6 +312,35 @@ export default function ArticleEditor({ initialArticle }: Props) {
                   required
                 />
               </div>
+
+              {/* In-Article Photos Helper Box */}
+              {additionalImages.length > 0 && (
+                <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '1rem', marginTop: '1rem' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff', marginBottom: '0.5rem' }}>
+                    📸 In-Article Photos ({additionalImages.length} attached)
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.75rem' }}>
+                    These photos will automatically display between paragraphs in the article reader view. You can also insert them manually into the text:
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {additionalImages.map((img, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.35rem 0.6rem', borderRadius: '6px' }}>
+                        <img src={img} alt={`Photo ${idx + 2}`} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px' }} />
+                        <span style={{ fontSize: '0.75rem', color: '#e2e8f0' }}>Photo #{idx + 2}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setContent(prev => `${prev}\n\n<p><img src="${img}" alt="Article Photo ${idx + 2}" style="max-width:100%; border-radius:8px; margin:1.5rem 0;" /></p>\n\n`);
+                          }}
+                          style={{ background: 'none', border: 'none', color: 'var(--cyan-pulse)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                        >
+                          + Insert
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* SERP Preview Card */}
               <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.5rem' }}>
@@ -278,7 +382,7 @@ export default function ArticleEditor({ initialArticle }: Props) {
 
                 <div className="serp-preview-box">
                   <div className="serp-url">
-                    <span>cricmilan.com &rsaquo; {slug || 'slug'}</span>
+                    <span>cricmilan.in &rsaquo; {slug || 'slug'}</span>
                   </div>
                   <div className="serp-title">{seoTitle || title || 'Your Article Headline Will Appear Here - CricMilan'}</div>
                   <div className="serp-desc">
@@ -304,21 +408,62 @@ export default function ArticleEditor({ initialArticle }: Props) {
                 </select>
               </div>
 
+              {/* Dynamic Category Selector */}
               <div className="form-group">
-                <label htmlFor="category">Category</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                  <label htmlFor="category" style={{ marginBottom: 0 }}>Category <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategoryInput(!showNewCategoryInput)}
+                    style={{ background: 'none', border: 'none', color: 'var(--cyan-pulse)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 }}
+                  >
+                    {showNewCategoryInput ? '✕ Cancel' : '+ Add New Category'}
+                  </button>
+                </div>
+
+                {showNewCategoryInput && (
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.65rem' }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. IPL, T20 World Cup, WTC"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddNewCategory();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-accent"
+                      style={{ padding: '0 0.85rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                      onClick={handleAddNewCategory}
+                    >
+                      Add
+                    </button>
+                  </div>
+                )}
+
                 <select
                   id="category"
                   className="form-control"
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value === '__add_new__') {
+                      setShowNewCategoryInput(true);
+                    } else {
+                      setCategory(e.target.value);
+                    }
+                  }}
                   required
                 >
-                  <option value="Cricket">Cricket</option>
-                  <option value="Breaking News">Breaking News</option>
-                  <option value="Stories">Stories</option>
-                  <option value="India">India</option>
-                  <option value="World">World</option>
-                  <option value="Trending">Trending</option>
+                  {categoriesList.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="__add_new__">+ Add New Category...</option>
                 </select>
               </div>
 
@@ -357,9 +502,9 @@ export default function ArticleEditor({ initialArticle }: Props) {
                 </label>
               </div>
 
-              {/* Featured Image Section with Canvas compression */}
+              {/* 1. Main Featured Photo (Image 1) */}
               <div className="form-group" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem' }}>
-                <label>Featured Story Image</label>
+                <label style={{ fontWeight: 800 }}>Main Lead Photo (Image 1 - Header)</label>
 
                 <div
                   className="image-dropzone"
@@ -367,7 +512,7 @@ export default function ArticleEditor({ initialArticle }: Props) {
                 >
                   <div style={{ fontSize: '1.8rem', marginBottom: '0.35rem' }}>📷</div>
                   <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ffffff' }}>
-                    Click to Select or Drop Image
+                    Select Main Lead Photo
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                     Auto-optimized in browser via HTML5 Canvas
@@ -386,11 +531,116 @@ export default function ArticleEditor({ initialArticle }: Props) {
                 />
 
                 <div className="img-preview-box">
-                  <img src={imagePreview} alt="Preview" />
+                  <img src={imagePreview} alt="Lead Preview" />
                 </div>
                 {compressionInfo && (
                   <div style={{ fontSize: '0.75rem', color: '#34d399', marginTop: '0.4rem', fontWeight: 700 }}>
                     {compressionInfo}
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Additional Photos (Image 2, 3, etc. for in-article view) */}
+              <div className="form-group" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ fontWeight: 800, marginBottom: 0 }}>
+                    Additional Photos (Image 2, 3+)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => additionalFilesRef.current?.click()}
+                    className="btn btn-accent"
+                    style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}
+                  >
+                    + Add Photo(s)
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                  Add 2 or more photos to display between article paragraphs automatically.
+                </div>
+
+                <input
+                  type="file"
+                  ref={additionalFilesRef}
+                  accept="image/*"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    handleAdditionalFiles(e.target.files);
+                    e.target.value = '';
+                  }}
+                />
+
+                {isProcessingAdditional && (
+                  <div style={{ color: 'var(--cyan-pulse)', fontSize: '0.78rem', marginBottom: '0.5rem' }}>
+                    ⏳ Compressing photos...
+                  </div>
+                )}
+
+                {additionalImages.length === 0 ? (
+                  <div
+                    onClick={() => additionalFilesRef.current?.click()}
+                    style={{
+                      border: '1px dashed var(--border-subtle)',
+                      borderRadius: '8px',
+                      padding: '1.25rem',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      background: 'rgba(255, 255, 255, 0.02)'
+                    }}
+                  >
+                    <div style={{ fontSize: '1.4rem' }}>🖼️</div>
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+                      Click to add 2nd, 3rd photo...
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    {additionalImages.map((imgUrl, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '6px',
+                          padding: '0.5rem'
+                        }}
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`Photo ${index + 2}`}
+                          style={{ width: '60px', height: '42px', objectFit: 'cover', borderRadius: '4px' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ffffff' }}>
+                            Photo #{index + 2}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                            In-Article Paragraph Break
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeAdditionalImage(index)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#f87171',
+                            borderRadius: '4px',
+                            padding: '0.25rem 0.5rem',
+                            cursor: 'pointer',
+                            fontSize: '0.75rem'
+                          }}
+                          title="Remove photo"
+                        >
+                          🗑 Delete
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

@@ -3,8 +3,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import AdBanner from '@/components/AdBanner';
-import PollWidget from '@/components/PollWidget';
-import NewsletterWidget from '@/components/NewsletterWidget';
 import ShareButtons from '@/components/ShareButtons';
 import Reactions from './Reactions';
 import { STATIC_PAGES } from '@/lib/staticPages';
@@ -17,6 +15,108 @@ import {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+function interleaveContentWithImages(htmlContent: string, additionalImagesJson?: string, articleTitle?: string): string {
+  if (!additionalImagesJson) return htmlContent;
+  let images: string[] = [];
+  try {
+    const parsed = JSON.parse(additionalImagesJson);
+    if (Array.isArray(parsed)) {
+      images = parsed.filter(Boolean);
+    }
+  } catch (e) {
+    return htmlContent;
+  }
+
+  if (images.length === 0) return htmlContent;
+
+  // Interleave inside <p> paragraphs
+  if (htmlContent.includes('</p>')) {
+    const parts = htmlContent.split('</p>');
+    const totalParts = parts.length - 1;
+    if (totalParts <= 0) return htmlContent;
+
+    const interval = Math.max(1, Math.floor(totalParts / (images.length + 1)));
+    let result = '';
+    let imageIndex = 0;
+
+    for (let i = 0; i < totalParts; i++) {
+      result += parts[i] + '</p>';
+      const shouldInsert = (i + 1) % interval === 0 || (i === totalParts - 1 && imageIndex < images.length);
+      if (shouldInsert && imageIndex < images.length) {
+        const img = images[imageIndex];
+        result += `
+          <figure class="article-body-photo" style="margin: 2rem 0; text-align: center;">
+            <img src="${img}" alt="${articleTitle || 'Article photo'} - Photo ${imageIndex + 2}" style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08);" loading="lazy" />
+          </figure>
+        `;
+        imageIndex++;
+      }
+    }
+
+    if (parts[parts.length - 1]) {
+      result += parts[parts.length - 1];
+    }
+
+    while (imageIndex < images.length) {
+      const img = images[imageIndex];
+      result += `
+        <figure class="article-body-photo" style="margin: 2rem 0; text-align: center;">
+          <img src="${img}" alt="${articleTitle || 'Article photo'} - Photo ${imageIndex + 2}" style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08);" loading="lazy" />
+        </figure>
+      `;
+      imageIndex++;
+    }
+
+    return result;
+  }
+
+  // Interleave plain text paragraphs
+  const paragraphs = htmlContent.split(/\n\s*\n/).filter(Boolean);
+  if (paragraphs.length > 1) {
+    const interval = Math.max(1, Math.floor(paragraphs.length / (images.length + 1)));
+    let result = '';
+    let imageIndex = 0;
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      result += `<p>${paragraphs[i]}</p>`;
+      if ((i + 1) % interval === 0 && imageIndex < images.length) {
+        const img = images[imageIndex];
+        result += `
+          <figure class="article-body-photo" style="margin: 2rem 0; text-align: center;">
+            <img src="${img}" alt="${articleTitle || 'Article photo'} - Photo ${imageIndex + 2}" style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08);" loading="lazy" />
+          </figure>
+        `;
+        imageIndex++;
+      }
+    }
+    while (imageIndex < images.length) {
+      const img = images[imageIndex];
+      result += `
+        <figure class="article-body-photo" style="margin: 2rem 0; text-align: center;">
+          <img src="${img}" alt="${articleTitle || 'Article photo'} - Photo ${imageIndex + 2}" style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08);" loading="lazy" />
+        </figure>
+      `;
+      imageIndex++;
+    }
+    return result;
+  }
+
+  // Fallback sentence splitting
+  const sentences = htmlContent.split(/(?<=[.?!])\s+/);
+  if (sentences.length >= 3 && images.length > 0) {
+    const mid = Math.floor(sentences.length / 2);
+    const firstHalf = sentences.slice(0, mid).join(' ');
+    const secondHalf = sentences.slice(mid).join(' ');
+    return `<p>${firstHalf}</p>
+      <figure class="article-body-photo" style="margin: 2rem 0; text-align: center;">
+        <img src="${images[0]}" alt="${articleTitle || 'Article photo'}" style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08);" loading="lazy" />
+      </figure>
+      <p>${secondHalf}</p>`;
+  }
+
+  return `${htmlContent}<figure class="article-body-photo" style="margin: 2rem 0; text-align: center;"><img src="${images[0]}" alt="${articleTitle || 'Article photo'}" style="width: 100%; max-height: 520px; object-fit: cover; border-radius: 10px;" loading="lazy" /></figure>`;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -39,8 +139,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = article.seo_title || `${article.title} - CricMilan`;
-  const description = article.meta_description || 'Read the full article and live analysis on CricMilan.com.';
+  const description = article.meta_description || 'Read the full article and live analysis on CricMilan.in.';
   const image = article.featured_image || '/css/logo-og.jpg';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.in';
 
   return {
     title,
@@ -48,7 +149,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title,
       description,
-      url: `https://cricmilan.com/${article.slug}`,
+      url: `${siteUrl}/${article.slug}`,
       siteName: 'CricMilan',
       images: [{ url: image, alt: article.title }],
       type: 'article',
@@ -130,9 +231,6 @@ export default async function ArticlePage({ params }: PageProps) {
               ))}
             </div>
           </div>
-
-          <PollWidget />
-          <NewsletterWidget />
         </aside>
       </div>
     );
@@ -153,7 +251,8 @@ export default async function ArticlePage({ params }: PageProps) {
   const filteredRelated = relatedArticles.filter((a) => a.id !== article.id).slice(0, 3);
   const wordsCount = (article.content || '').replace(/<[^>]*>/g, '').split(/\s+/).length;
   const readTime = Math.max(2, Math.ceil(wordsCount / 180));
-  const fullUrl = `https://cricmilan.com/${article.slug}`;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.in';
+  const fullUrl = `${baseUrl}/${article.slug}`;
 
   // JSON-LD Schema
   const schemaData = {
@@ -164,7 +263,7 @@ export default async function ArticlePage({ params }: PageProps) {
       '@id': fullUrl
     },
     headline: article.seo_title || article.title,
-    image: [article.featured_image ? `https://cricmilan.com${article.featured_image}` : 'https://cricmilan.com/css/logo-og.jpg'],
+    image: [article.featured_image ? (article.featured_image.startsWith('http') ? article.featured_image : `${baseUrl}${article.featured_image}`) : `${baseUrl}/css/logo-og.jpg`],
     datePublished: article.published_at,
     dateModified: article.updated_at || article.published_at,
     author: {
@@ -176,7 +275,7 @@ export default async function ArticlePage({ params }: PageProps) {
       name: 'CricMilan',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://cricmilan.com/css/logo-og.jpg'
+        url: `${baseUrl}/css/logo-og.jpg`
       }
     },
     description: article.meta_description
@@ -229,14 +328,16 @@ export default async function ArticlePage({ params }: PageProps) {
             <div className="takeaways-callout">
               <h4>&#127951; Match Summary &amp; Key Highlights</h4>
               <p style={{ fontSize: '0.95rem', color: '#cbd5e1', marginBottom: 0 }}>
-                {article.meta_description || 'Get comprehensive ball-by-ball analysis, expert reactions, and tactical breakdown on CricMilan.com.'}
+                {article.meta_description || 'Get comprehensive ball-by-ball analysis, expert reactions, and tactical breakdown on CricMilan.in.'}
               </p>
             </div>
 
-            {/* Article Body Content */}
+            {/* Article Body Content with Interleaved In-Article Photos */}
             <div
               className="article-body"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{
+                __html: interleaveContentWithImages(article.content, article.additional_images, article.title)
+              }}
             />
 
             {/* Author Credits & Social Sharing (Moved to bottom of article) */}
@@ -376,9 +477,6 @@ export default async function ArticlePage({ params }: PageProps) {
               ))}
             </div>
           </div>
-
-          <PollWidget />
-          <NewsletterWidget />
         </aside>
       </div>
     </>

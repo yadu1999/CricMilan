@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       status: data.status || 'draft',
       is_breaking: data.is_breaking ? 1 : 0,
       featured_image: data.featured_image || '',
+      additional_images: typeof data.additional_images === 'string' ? data.additional_images : JSON.stringify(data.additional_images || []),
       seo_title: data.seo_title || data.title,
       meta_description: data.meta_description || '',
       published_at: data.published_at || new Date().toISOString()

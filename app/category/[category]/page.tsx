@@ -2,8 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import AdBanner from '@/components/AdBanner';
-import PollWidget from '@/components/PollWidget';
-import NewsletterWidget from '@/components/NewsletterWidget';
 import { getArticlesByCategory, getPublishedArticles } from '@/lib/db';
 
 interface CategoryPageProps {
@@ -17,7 +15,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
   return {
     title: `${formattedTitle} News & Updates`,
-    description: `Browse latest ${formattedTitle} news, match analyses, interviews and updates on CricMilan.com.`
+    description: `Browse latest ${formattedTitle} news, match analyses, interviews and updates on CricMilan.in.`
   };
 }
 
@@ -97,7 +95,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   <h3>
                     <Link href={`/${article.slug}`}>{article.title}</Link>
                   </h3>
-                  <p>{article.meta_description || 'Read the full story on CricMilan.com'}</p>
+                  <p>{article.meta_description || 'Read the full story on CricMilan.in'}</p>
                   <div className="card-meta">
                     <div className="author-pill">
                       <span className="author-avatar">{article.author ? article.author.charAt(0).toUpperCase() : 'C'}</span>
@@ -169,9 +167,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             ))}
           </div>
         </div>
-
-        <PollWidget />
-        <NewsletterWidget />
       </aside>
     </div>
   );

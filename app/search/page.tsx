@@ -2,8 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import AdBanner from '@/components/AdBanner';
-import PollWidget from '@/components/PollWidget';
-import NewsletterWidget from '@/components/NewsletterWidget';
 import { searchArticles, getPublishedArticles } from '@/lib/db';
 
 interface SearchPageProps {
@@ -96,7 +94,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   <h3>
                     <Link href={`/${article.slug}`}>{article.title}</Link>
                   </h3>
-                  <p>{article.meta_description || 'Read the full story on CricMilan.com'}</p>
+                  <p>{article.meta_description || 'Read the full story on CricMilan.in'}</p>
                   <div className="card-meta">
                     <div className="author-pill">
                       <span className="author-avatar">{article.author ? article.author.charAt(0).toUpperCase() : 'C'}</span>
@@ -167,9 +165,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             ))}
           </div>
         </div>
-
-        <PollWidget />
-        <NewsletterWidget />
       </aside>
     </div>
   );

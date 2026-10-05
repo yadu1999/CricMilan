@@ -6,15 +6,15 @@ import AdBanner from '@/components/AdBanner';
 
 export const metadata: Metadata = {
   title: {
-    default: 'CricMilan.com - Latest Cricket News, Breaking News, Stories',
+    default: 'CricMilan.in - Latest Cricket News, Breaking News, Stories',
     template: '%s - CricMilan'
   },
   description: 'Get your daily dose of cricket news, breaking headlines, stories, India matches, world coverage and trending articles on CricMilan.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.in'),
   openGraph: {
-    title: 'CricMilan.com - CRICKET & NEWS ALWAYS ON.',
+    title: 'CricMilan.in - CRICKET & NEWS ALWAYS ON.',
     description: 'Get your daily dose of cricket news, breaking headlines, stories, India matches, world coverage and trending articles on CricMilan.',
-    url: 'https://cricmilan.com',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.in',
     siteName: 'CricMilan',
     images: [
       {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CricMilan.com - CRICKET & NEWS ALWAYS ON.',
+    title: 'CricMilan.in - CRICKET & NEWS ALWAYS ON.',
     description: 'Get your daily dose of cricket news, breaking headlines, stories, India matches, world coverage and trending articles on CricMilan.',
     images: ['/css/logo-og.jpg']
   }

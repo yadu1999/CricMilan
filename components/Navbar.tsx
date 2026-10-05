@@ -46,6 +46,44 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [menuOpen]);
 
+  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setDynamicCategories(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const primaryNames = ['cricket', 'breaking news', 'stories', 'india', 'world'];
+
+  // All extra categories (e.g. Trending, dynamic new categories) + previous sub-categories moved into Other
+  const otherSubItems: SubNavItem[] = [
+    // Dynamic categories beyond the 6 primary
+    ...dynamicCategories
+      .filter(cat => !primaryNames.includes(cat.toLowerCase()))
+      .map(cat => ({
+        href: `/category/${cat.toLowerCase().replace(/\s+/g, '-')}`,
+        label: cat,
+        badge: cat.toLowerCase() === 'trending' ? '🔥 Hot' : undefined
+      })),
+    // Fallback if Trending is not yet loaded
+    ...(dynamicCategories.some(c => c.toLowerCase() === 'trending') ? [] : [
+      { href: '/category/trending', label: 'Trending', badge: '🔥 Hot' }
+    ]),
+    // Curated sub-topics previously under Cricket/Stories moved here
+    { href: '/search?q=IPL', label: 'IPL 2026 Season', badge: 'Hot' },
+    { href: '/search?q=Asia+Cup', label: 'Asia Cup Highlights' },
+    { href: '/search?q=Team+India', label: 'Team India Matches' },
+    { href: '/search?q=ICC', label: 'ICC Tournaments' },
+    { href: '/search?q=Grassroots', label: 'Grassroots Stories' },
+    { href: '/search?q=Kohli', label: 'Player Spotlights' },
+  ];
+
   const navItems: NavItem[] = [
     {
       href: '/',
@@ -55,14 +93,7 @@ export default function Navbar() {
     {
       href: '/category/cricket',
       label: 'Cricket',
-      icon: '🏏',
-      subItems: [
-        { href: '/category/cricket', label: 'All Cricket News', badge: 'Latest' },
-        { href: '/search?q=IPL', label: 'IPL 2026 Season', badge: 'Hot' },
-        { href: '/search?q=Asia+Cup', label: 'Asia Cup Highlights' },
-        { href: '/search?q=Team+India', label: 'Team India Matches' },
-        { href: '/search?q=ICC', label: 'ICC Tournaments' },
-      ]
+      icon: '🏏'
     },
     {
       href: '/category/breaking-news',
@@ -73,12 +104,7 @@ export default function Navbar() {
     {
       href: '/category/stories',
       label: 'Stories',
-      icon: '📖',
-      subItems: [
-        { href: '/category/stories', label: 'All In-Depth Stories' },
-        { href: '/search?q=Grassroots', label: 'Grassroots Stories' },
-        { href: '/search?q=Kohli', label: 'Player Spotlights' },
-      ]
+      icon: '📖'
     },
     {
       href: '/category/india',
@@ -92,15 +118,10 @@ export default function Navbar() {
     },
     {
       href: '/category/trending',
-      label: 'Trending',
-      icon: '🔥',
-      subItems: [
-        { href: '/category/trending', label: 'All Trending' },
-        { href: '/search?q=Kohli', label: '#ViratKohli51st' },
-        { href: '/search?q=Asia+Cup', label: '#AsiaCupThriller' },
-        { href: '/search?q=IPL', label: '#IPL2026Auction' },
-      ]
-    },
+      label: 'Other',
+      icon: '📂',
+      subItems: otherSubItems
+    }
   ];
 
   const handleMobileSearchSubmit = (e: React.FormEvent) => {

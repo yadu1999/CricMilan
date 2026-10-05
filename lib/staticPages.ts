@@ -7,9 +7,9 @@ export interface StaticPageData {
 export const STATIC_PAGES: Record<string, StaticPageData> = {
   about: {
     title: 'About Us',
-    metaDescription: 'Learn about CricMilan.com, our mission, editorial team, and passion for delivering instant, verified cricket updates.',
+    metaDescription: 'Learn about CricMilan.in, our mission, editorial team, and passion for delivering instant, verified cricket updates.',
     content: `
-      <p>Welcome to <strong>CricMilan.com</strong>, your premier destination for up-to-the-minute cricket updates, analysis, and breaking news from India and around the globe.</p>
+      <p>Welcome to <strong>CricMilan.in</strong>, your premier destination for up-to-the-minute cricket updates, analysis, and breaking news from India and around the globe.</p>
       <p>Established with the vision of offering cricket enthusiasts a fast, responsive, and clutter-free platform, CricMilan brings you comprehensive coverage ranging from national tournaments to international series, trending headlines, and engaging cricket stories.</p>
       <h2>Our Mission</h2>
       <p>We aim to deliver news accurately and quickly. Our team of contributors and editors works round the clock to ensure you never miss a match highlight, a statistical milestone, or critical sports reports.</p>
@@ -18,21 +18,21 @@ export const STATIC_PAGES: Record<string, StaticPageData> = {
   },
   contact: {
     title: 'Contact Us',
-    metaDescription: 'Get in touch with the editorial team, press office, or business partnerships at CricMilan.com.',
+    metaDescription: 'Get in touch with the editorial team, press office, or business partnerships at CricMilan.in.',
     content: `
       <p>We would love to hear from you! If you have any feedback, questions, or business inquiries, please reach out to us using the details below.</p>
       <h2>Get in Touch</h2>
-      <p><strong>Email:</strong> contact@cricmilan.com</p>
-      <p><strong>Address:</strong> CricMilan Media Group, New Delhi, India</p>
+      <p><strong>Email:</strong> cricmilan@gmail.com</p>
+      <p><strong>Address:</strong> Patna, india, 800001</p>
       <h2>Work With Us</h2>
       <p>If you are a passionate sports writer or an analyst who wants to contribute articles to CricMilan, send us your sample drafts at our official email.</p>
     `
   },
   'privacy-policy': {
     title: 'Privacy Policy',
-    metaDescription: 'Read the official Privacy Policy and cookie disclaimer for CricMilan.com visitors and readers.',
+    metaDescription: 'Read the official Privacy Policy and cookie disclaimer for CricMilan.in visitors and readers.',
     content: `
-      <p>At CricMilan.com, accessible from cricmilan.com, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by CricMilan and how we use it.</p>
+      <p>At CricMilan.in, accessible from cricmilan.in, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by CricMilan and how we use it.</p>
       <h2>Log Files</h2>
       <p>CricMilan follows a standard procedure of using log files. These files log visitors when they visit websites. The information collected by log files includes internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable.</p>
       <h2>Cookies and Web Beacons</h2>
@@ -43,10 +43,10 @@ export const STATIC_PAGES: Record<string, StaticPageData> = {
   },
   'terms-conditions': {
     title: 'Terms & Conditions',
-    metaDescription: 'Official Terms of Service and Conditions governing the use of CricMilan.com.',
+    metaDescription: 'Official Terms of Service and Conditions governing the use of CricMilan.in.',
     content: `
-      <p>Welcome to CricMilan.com!</p>
-      <p>These terms and conditions outline the rules and regulations for the use of CricMilan's Website, located at cricmilan.com.</p>
+      <p>Welcome to CricMilan.in!</p>
+      <p>These terms and conditions outline the rules and regulations for the use of CricMilan's Website, located at cricmilan.in.</p>
       <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use CricMilan if you do not agree to take all of the terms and conditions stated on this page.</p>
       <h2>Cookies</h2>
       <p>We employ the use of cookies. By accessing CricMilan, you agreed to use cookies in agreement with the CricMilan's Privacy Policy.</p>
@@ -56,9 +56,9 @@ export const STATIC_PAGES: Record<string, StaticPageData> = {
   },
   disclaimer: {
     title: 'Disclaimer',
-    metaDescription: 'Legal disclaimer and accuracy statement for news, statistics and editorial commentary on CricMilan.com.',
+    metaDescription: 'Legal disclaimer and accuracy statement for news, statistics and editorial commentary on CricMilan.in.',
     content: `
-      <p>All the information on this website - cricmilan.com - is published in good faith and for general information purpose only. CricMilan does not make any warranties about the completeness, reliability and accuracy of this information. Any action you take upon the information you find on this website, is strictly at your own risk.</p>
+      <p>All the information on this website - cricmilan.in - is published in good faith and for general information purpose only. CricMilan does not make any warranties about the completeness, reliability and accuracy of this information. Any action you take upon the information you find on this website, is strictly at your own risk.</p>
       <h2>Consent</h2>
       <p>By using our website, you hereby consent to our disclaimer and agree to its terms.</p>
       <h2>Updates</h2>

@@ -9,6 +9,7 @@ export interface Article {
   status: 'published' | 'draft';
   is_breaking: number;
   featured_image: string;
+  additional_images?: string;
   seo_title: string;
   meta_description: string;
   created_at?: string;
