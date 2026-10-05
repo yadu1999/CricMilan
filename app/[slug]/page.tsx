@@ -248,7 +248,8 @@ export default async function ArticlePage({ params }: PageProps) {
     getPublishedArticles(5)
   ]);
 
-  const filteredRelated = relatedArticles.filter((a) => a.id !== article.id).slice(0, 3);
+  const categoryRelated = relatedArticles.filter((a) => a.id !== article.id);
+  const filteredRelated = (categoryRelated.length > 0 ? categoryRelated : allArticles.filter((a) => a.id !== article.id)).slice(0, 3);
   const wordsCount = (article.content || '').replace(/<[^>]*>/g, '').split(/\s+/).length;
   const readTime = Math.max(2, Math.ceil(wordsCount / 180));
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cricmilan.in';

@@ -172,13 +172,25 @@ export async function getArticlesByCategory(category: string, limit = 30): Promi
   try {
     await initDatabase();
     const db = getDbClient();
-    const res = await db.execute({
-      sql: `SELECT * FROM articles WHERE LOWER(category) = LOWER(?) AND status = 'published' ORDER BY published_at DESC LIMIT ?`,
-      args: [category, limit]
-    });
+    const catLower = category.toLowerCase().trim();
+    const isBreaking = catLower === 'breaking news' || catLower === 'breaking-news';
+    const res = isBreaking
+      ? await db.execute({
+          sql: `SELECT * FROM articles WHERE (is_breaking = 1 OR LOWER(category) = 'breaking news') AND status = 'published' ORDER BY published_at DESC LIMIT ?`,
+          args: [limit]
+        })
+      : await db.execute({
+          sql: `SELECT * FROM articles WHERE LOWER(category) = LOWER(?) AND status = 'published' ORDER BY published_at DESC LIMIT ?`,
+          args: [category, limit]
+        });
     return (res.rows as unknown) as Article[];
   } catch (e) {
-    return INITIAL_ARTICLES.filter(a => a.category.toLowerCase() === category.toLowerCase() && a.status === 'published').slice(0, limit);
+    const catLower = category.toLowerCase().trim();
+    const isBreaking = catLower === 'breaking news' || catLower === 'breaking-news';
+    return INITIAL_ARTICLES.filter(a =>
+      (isBreaking ? (a.is_breaking === 1 || a.category.toLowerCase() === 'breaking news') : a.category.toLowerCase() === catLower) &&
+      a.status === 'published'
+    ).slice(0, limit);
   }
 }
 

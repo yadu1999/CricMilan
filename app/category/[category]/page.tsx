@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import AdBanner from '@/components/AdBanner';
-import { getArticlesByCategory, getPublishedArticles } from '@/lib/db';
+import { getArticlesByCategory, getPublishedArticles, getAllCategories } from '@/lib/db';
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -24,19 +24,16 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const decodedCategory = decodeURIComponent(category).replace(/-/g, ' ');
   const formattedTitle = decodedCategory.charAt(0).toUpperCase() + decodedCategory.slice(1);
 
-  const [articles, sidebarArticles] = await Promise.all([
+  const [articles, sidebarArticles, allCats] = await Promise.all([
     getArticlesByCategory(decodedCategory, 30),
-    getPublishedArticles(5)
+    getPublishedArticles(5),
+    getAllCategories()
   ]);
 
-  const categoriesList = [
-    { slug: 'cricket', label: 'Cricket' },
-    { slug: 'breaking-news', label: 'Breaking News' },
-    { slug: 'stories', label: 'Stories' },
-    { slug: 'india', label: 'India' },
-    { slug: 'world', label: 'World' },
-    { slug: 'trending', label: 'Trending' }
-  ];
+  const categoriesList = allCats.map((cat) => ({
+    slug: cat.toLowerCase().replace(/\s+/g, '-'),
+    label: cat
+  }));
 
   return (
     <div className="main-layout">

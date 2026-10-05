@@ -8,9 +8,9 @@ export const revalidate = 60; // ISR cache for 60 seconds
 export default async function HomePage() {
   const allArticles = await getPublishedArticles(20);
   const featuredArticles = allArticles.slice(0, 4);
-  const latestArticles = allArticles.slice(0, 6);
-  const cricketArticles = await getArticlesByCategory('Cricket', 3);
-  const indiaArticles = await getArticlesByCategory('India', 3);
+  const latestArticles = allArticles;
+  const cricketArticles = await getArticlesByCategory('Cricket', 6);
+  const indiaArticles = await getArticlesByCategory('India', 6);
 
   const primary = featuredArticles[0];
   const secondaryStories = featuredArticles.slice(1);
